@@ -66,6 +66,8 @@
 using namespace std;
 constexpr int Size=8;
 int BotColor=-1;//black=1,white=-1;
+#define Black 1
+#define White -1
 int BeginTime;
 struct __attribute__((packed)) Move
 {
@@ -289,12 +291,12 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
 
     if(depth == 0) 
     {
-        return CalcValue(s,color);
+        return CalcValue(s,-color);//因为此时本方并没有走棋，根据定义应该传入-Color
     }
     
     // 时间控制优化：提前计算时间限制
     const clock_t time_limit = TimeLimit*CLOCKS_PER_SEC;
-    if (clock()-BeginTime > time_limit) return CalcValue(s,color);
+    if (clock()-BeginTime > time_limit) return CalcValue(s,-color);
     
     //或许需要进一步调参卡时
     vector<Move> moves;
@@ -303,7 +305,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
     if(moves.empty()) 
     {
         // 无合法走法，当前颜色输
-        return (color == 1) ? PreScore : -PreScore;
+        return (color == Black) ? PreScore : -PreScore;
     }
 
     const short move_count = moves.size();
@@ -325,7 +327,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
     
     double result;
     //if((color == BotColor && BotColor==-1)||(color!=BotColor&&BotColor==1)) //最大化
-    if (color==-1)
+    if (color==White)
     { 
         double MaxValue = -PreScore;
         const int start_idx = static_cast<int>(move_count) - 1;
@@ -345,7 +347,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
         }
         result = MaxValue;
     } 
-    else // 最小化
+    else // 最小化,color==Black
     { 
         double MinValue = PreScore;
         const int end_idx = min(static_cast<int>(move_count), PriorChoose);
@@ -415,10 +417,9 @@ void Search()
     
     double pre_best_score,best_score;Move pre_best_move;
     
-    // 时间限制预计算
-    const clock_t time_limit_clocks = static_cast<clock_t>(TimeLimit*CLOCKS_PER_SEC);
-    
-    while (clock()-BeginTime < time_limit_clocks)
+    // 时间限制
+    const clock_t time_limit = static_cast<clock_t>(TimeLimit*CLOCKS_PER_SEC);
+    while (clock()-BeginTime < time_limit)
     {
         if (BotColor==-1) best_score=-PreScore;else best_score=PreScore;
         
@@ -488,7 +489,7 @@ void Search()
             [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
         }
         
-        if (clock()-BeginTime < time_limit_clocks)
+        if (clock()-BeginTime < time_limit)
         {
             pre_best_score=best_score;
             pre_best_move=best_move;
@@ -551,6 +552,7 @@ void Mirror(int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y)
         Search();
     }
 }
+
 int main()
 {
     BeginTime=clock();
@@ -558,6 +560,7 @@ int main()
     initZobrist();
     ori_state.mp[0][2]=1;ori_state.mp[5][0]=1;ori_state.mp[2][0]=1;ori_state.mp[7][2]=1;
     ori_state.mp[0][5]=-1;ori_state.mp[2][7]=-1;ori_state.mp[5][7]=-1;ori_state.mp[7][5]=-1;
+    // for (int i=0;i<64;++i) pow_table[i]=1.0/(1<<i);
     GetSituation();
     
     return 0;
@@ -1222,8 +1225,9 @@ inline double CalcValue(const Situation &state,const int color)//估价函数，
     }
     
     // 先行方优势
-    double k = (BotColor==-1) ? 0.3 : -0.3; // 白方为+
-    k *= ((color==BotColor)? -1:1);//若color=Botcolor，即Bot已落子，则先行方为对方，*-1
+    // double k = (BotColor==-1) ? 0.3 : -0.3; // 白方为+
+    // k *= ((color==BotColor)? -1:1);//若color=Botcolor，即Bot已落子，则先行方为对方，*-1
+    double k=(color==White) ? -0.3 : 0.3;
     
     // 计算双方QueenMove/KingMove矩阵 - 减少拷贝开销
     const Situation WhiteQM = CalcQueenMove(-1, state);
@@ -1260,13 +1264,13 @@ inline double CalcValue(const Situation &state,const int color)//估价函数，
             const bool wkm_valid = (wkm != 0x3f3f3f3f);
             const bool bkm_valid = (bkm != 0x3f3f3f3f);
             
-            if (wkm_valid && bkm_valid) {
+            if (wkm_valid && bkm_valid) 
+            {
                 t2 += (wkm == bkm) ? k : ((wkm < bkm) ? 1 : -1);
-            } else if (wkm_valid) {
-                t2 += 1.0;
-            } else if (bkm_valid) {
-                t2 -= 1.0;
-            }
+            } 
+            else if (wkm_valid) t2 += 1.0;
+            else if (bkm_valid) t2 -= 1.0;
+            
             
             // p1：Queen走法位置差
             if (wqm_valid && bqm_valid) {
@@ -1275,7 +1279,11 @@ inline double CalcValue(const Situation &state,const int color)//估价函数，
                 const double bqm_pow = 1.0 / (1 << bqm);  // 2^(-bqm)
                 p1 += 2 * (wqm_pow - bqm_pow);
             }
-            
+            else if (wqm_valid && (!bqm_valid)) p1+=2.0/ (1 << wqm);
+            else if ((!wqm_valid) && bqm_valid) p1-=2.0/ (1 << bqm);
+
+
+
             // p2：King走法位置差
             if (wkm_valid && bkm_valid) {
                 const double diff = static_cast<double>(bkm - wkm) / 6.0;
