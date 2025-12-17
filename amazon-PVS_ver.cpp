@@ -1,4 +1,4 @@
-#pragma GCC target("avx2,bmi,bmi2,lzcnt,popcnt")
+#pragma GCC target ("abm,avx,avx2,f16c,fma,mmx,bmi,bmi2,lzcnt,popcnt,sse,sse2,sse3,sse4,ssse3,tune=native")
 #pragma GCC optimize(1)
 #pragma GCC optimize(2)
 #pragma GCC optimize(3)
@@ -21,16 +21,13 @@
 #pragma GCC optimize("-fcrossjumping")
 #pragma GCC optimize("-fthread-jumps")
 #pragma GCC optimize("-funroll-loops")
-//#pragma GCC optimize("-fwhole-program")
 #pragma GCC optimize("-freorder-blocks")
 #pragma GCC optimize("-fschedule-insns")
 #pragma GCC optimize("inline-functions")
 #pragma GCC optimize("-ftree-tail-merge")
 #pragma GCC optimize("-fschedule-insns2")
 #pragma GCC optimize("-fstrict-aliasing")
-//#pragma GCC optimize("-fstrict-overflow")
 #pragma GCC optimize("-falign-functions")
-//#pragma GCC optimize("-fcse-skip-blocks")
 #pragma GCC optimize("-fcse-follow-jumps")
 #pragma GCC optimize("-fsched-interblock")
 #pragma GCC optimize("-fpartial-inlining")
@@ -44,17 +41,10 @@
 #pragma GCC optimize("-ftree-switch-conversion")
 #pragma GCC optimize("-foptimize-sibling-calls")
 #pragma GCC optimize("-fexpensive-optimizations")
-//#pragma GCC optimize("-funsafe-loop-optimizations")
 #pragma GCC optimize("inline-functions-called-once")
 #pragma GCC optimize("-fdelete-null-pointer-checks")
-//#pragma GCC optimize("-flto")  // ¡¥Ω” ±”≈ªØ
-//#pragma GCC optimize("-flto-partition=none")  // LTO∑÷«¯≤ﬂ¬‘
-//#pragma GCC optimize("-fvisibility=hidden")  // ƒ¨»œ“˛≤ÿ∑˚∫≈
-//#pragma GCC optimize("-fPIC")  // Œª÷√Œﬁπÿ¥˙¬Î  
-#pragma GCC optimize("-fomit-frame-pointer")  //  °¬‘÷°÷∏’Î
-//#pragma GCC optimize("-fmerge-all-constants")  // ∫œ≤¢À˘”–≥£¡ø
-#pragma GCC optimize("-fno-stack-protector")  // Ω˚”√’ª±£ª§£®“—‘⁄«∞√Ê∆Ù”√£©
-//#pragma GCC optimize("-march=native")  // ±æµÿº‹ππ”≈ªØ
+#pragma GCC optimize("-fomit-frame-pointer")  
+#pragma GCC optimize("-fno-stack-protector")  
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -105,35 +95,35 @@ struct __attribute__((packed)) StateBackup
 inline StateBackup ApplyMoveWithBackup(Situation &s, Move m, int color) 
 {
     StateBackup bk;
-    // ≈˙¡ø∏≥÷µ”≈ªØ
+  
     bk.ori_x = m.ori_x; bk.ori_y = m.ori_y;
     bk.goal_x = m.goal_x; bk.goal_y = m.goal_y;
     bk.arr_x = m.arr_x; bk.arr_y = m.arr_y;
 
-    // ≈˙¡ø∂¡»°”≈ªØ
-    bk.val_ori = s.mp[bk.ori_x][bk.ori_y];
-    bk.val_goal = s.mp[bk.goal_x][bk.goal_y];
-    bk.val_arr = s.mp[bk.arr_x][bk.arr_y];
+    
+    bk.val_ori = s.mp[ static_cast<signed char>(bk.ori_x)][static_cast<signed char>(bk.ori_y)];
+    bk.val_goal = s.mp[static_cast<signed char>(bk.goal_x)][static_cast<signed char>(bk.goal_y)];
+    bk.val_arr = s.mp[static_cast<signed char>(bk.arr_x)][static_cast<signed char>(bk.arr_y)];
 
-    // ≈˙¡ø–¥»Î”≈ªØ
-    s.mp[bk.ori_x][bk.ori_y] = 0;
-    s.mp[bk.goal_x][bk.goal_y] = static_cast<signed char>(color);
-    s.mp[bk.arr_x][bk.arr_y] = 2;
+    
+    s.mp[static_cast<signed char>(bk.ori_x)][static_cast<signed char>(bk.ori_y)] = 0;
+    s.mp[static_cast<signed char>(bk.goal_x)][static_cast<signed char>(bk.goal_y)] = static_cast<signed char>(color);
+    s.mp[static_cast<signed char>(bk.arr_x)][static_cast<signed char>(bk.arr_y)] = 2;
     return bk;
 }
-// ª÷∏¥◊¥Ã¨ - ”≈ªØƒ⁄¥Ê∑√Œ À≥–Ú
+// ª÷∏¥◊¥Ã¨
 inline void RestoreMove(Situation &s, const StateBackup &bk) 
 {
-    // ≈˙¡ø–¥»Î”≈ªØ“‘Ã·∏ﬂª∫¥Ê√¸÷–¬ 
-    s.mp[bk.ori_x][bk.ori_y] = bk.val_ori;
-    s.mp[bk.goal_x][bk.goal_y] = bk.val_goal;
-    s.mp[bk.arr_x][bk.arr_y] = bk.val_arr;
+    
+    s.mp[static_cast<signed char>(bk.ori_x)][static_cast<signed char>(bk.ori_y)] = bk.val_ori;
+    s.mp[static_cast<signed char>(bk.goal_x)][static_cast<signed char>(bk.goal_y)] = bk.val_goal;
+    s.mp[static_cast<signed char>(bk.arr_x)][static_cast<signed char>(bk.arr_y)] = bk.val_arr;
 }
 
-// ”≈ªØƒ⁄¥Ê∑√Œ À≥–Ú“‘Ã·∏ﬂª∫¥Ê√¸÷–¬ 
+
 inline void PlaceChess(Situation &state,int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y,int color)
 {
-    // ∞¥’’ƒ⁄¥Ê∑√Œ À≥–Ú÷ÿ–¬≈≈¡–“‘Ã·∏ﬂª∫¥Êæ÷≤ø–‘
+    
     state.mp[ori_x][ori_y] = 0;
     state.mp[goal_x][goal_y] = static_cast<signed char>(color);
     state.mp[arr_x][arr_y] = 2;
@@ -143,7 +133,7 @@ bool CheckRoad(const Situation &state,int ori_x,int ori_y,int goal_x,int goal_y)
 {
     if (goal_x==ori_x&&goal_y==ori_y) return false;
     
-    // Œª‘ÀÀ„”≈ªØ£∫ π”√Œª‘ÀÀ„¥˙ÃÊÃıº˛≈–∂œ
+    // 
     const bool same_row = (goal_x == ori_x);
     const bool same_col = (goal_y == ori_y);
     
@@ -186,11 +176,11 @@ bool CheckRoad(const Situation &state,int ori_x,int ori_y,int goal_x,int goal_y)
 }
 bool Check(Situation &state,int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y,int color)
 {
-    // ±ﬂΩÁºÏ≤È”≈ªØ£∫Ã·«∞Ω¯––±ﬂΩÁºÏ≤È
+    // ±ﬂΩÁºÏ≤È
     if ((unsigned)goal_x >= Size || (unsigned)goal_y >= Size || 
         (unsigned)arr_x >= Size || (unsigned)arr_y >= Size) return false;
     
-    // Ãıº˛ºÏ≤È”≈ªØ£∫÷ÿ–¬≈≈¡–Ãıº˛“‘æ°‘Á∑µªÿ
+    // ÷ÿ–¬≈≈¡–Ãıº˛“‘æ°‘Á∑µªÿ
     if (state.mp[ori_x][ori_y] != color) return false;
     if (state.mp[goal_x][goal_y] != 0) return false;
     
@@ -232,7 +222,7 @@ const int StateCount = 4; // 4÷÷◊¥Ã¨£∫0/1/-1/2
 // ‘§…˙≥…ZobristÀÊª˙ ˝±Ì
 uint64_t ZobristTable[Size][Size][StateCount];
 
-// ≥ı ºªØZobrist±Ì - —≠ª∑’πø™”≈ªØ
+// ≥ı ºªØZobrist±Ì
 void initZobrist() 
 {
     mt19937_64 rng(20070702); 
@@ -248,7 +238,7 @@ void initZobrist()
         }
     }
 }
-//hashº∆À„£¨ π”√Zobristπ˛œ£∑Ω∑® - ”≈ªØÃıº˛≈–∂œ
+//hashº∆À„£¨ π”√Zobristπ˛œ£∑Ω∑®
 inline uint64_t hashSituation(const Situation &s) 
 {
     uint64_t hash = 0;
@@ -404,7 +394,6 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
 // µ¸¥˙º”…Ó + PVSÀ—À˜
 void Search()
 {
-    // if (turnID==1 && BotColor==1){ printf("2 0 2 5 5 5"); return; }
     vector<Move> cur_move ;
     cur_move.reserve(2000);
     GenerateMove(cur_move,ori_state, BotColor);
@@ -436,7 +425,7 @@ void Search()
     sort(moves_with_score.begin(), moves_with_score.end(),
         [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
     
-    double pre_best_score,best_score;Move pre_best_move;
+    double pre_best_score,best_score;Move pre_best_move=moves_with_score[(BotColor==White)?(0):(move_count-1)].first;
     
     //  ±º‰œﬁ÷∆
     const clock_t time_limit = static_cast<clock_t>(TimeLimit*CLOCKS_PER_SEC);
@@ -539,7 +528,7 @@ void Search()
 bool Mirrorok=1;
 void Mirror(int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y)
 {
-    int nx=7-ori_x,ny=7-ori_y,ngx=7-goal_x,ngy=7-goal_y,nax=7-arr_x,nay=7-arr_y;
+    // int nx=7-ori_x,ny=7-ori_y,ngx=7-goal_x,ngy=7-goal_y,nax=7-arr_x,nay=7-arr_y;
     // if (Mirrorok && turnID<=4 && BotColor==-1 && Check(state,nx,ny,ngx,ngy,nax,nay,BotColor) )
     // {
     //     printf("%d %d %d %d %d %d\n",nx,ny,ngx,ngy,nax,nay);
@@ -581,7 +570,8 @@ void Mirror(int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y)
     //     }
     //     Search();
     // }
-    // else
+    if (turnID==1 && BotColor==Black) printf("5 0 5 6 2 3\n");
+    else
     {
         Search();
     }
@@ -926,7 +916,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
         }
     }
     
-    // BFSº∆À„King◊ﬂ∑®ø…¥Ôæ‡¿Î - —≠ª∑’πø™”≈ªØ
+    // 
     while (head < tail)
     {
         int x=qx[head], y=qy[head++];
@@ -1057,90 +1047,90 @@ int blankMobility[8][8];
 
 inline double CalcMobility(int x,int y,const Situation &state)
 {
-    int res[8][8];
-    memset(res, -1, sizeof(res));
-    static int qx[64], qy[64];
-    int head=0, tail=0;
-    qx[tail] = x;
-    qy[tail++] = y;
-    res[x][y] = 0;
+    // int res[8][8];
+    // memset(res, -1, sizeof(res));
+    // static int qx[64], qy[64];
+    // int head=0, tail=0;
+    // qx[tail] = x;
+    // qy[tail++] = y;
+    // res[x][y] = 0;
     
-    // BFSº∆À„ - —≠ª∑’πø™”≈ªØ
+    // —≠ª∑’πø™”≈ªØ
     double retmob = 0;
-    while (head < tail)
+    // while (head < tail)
     {
-        int cx = qx[head], cy = qy[head++];
-        if (head!=1) retmob += (double)(blankMobility[cx][cy]) / res[cx][cy];
+        // int x=qx[head], y=qy[head++];
+        
         // ∑ΩœÚ0: (1, 0)
-        int nx = cx + 1, ny = cy;
-        if ((unsigned)nx < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        int nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx += 1;
+            if ((unsigned)nx >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
         // ∑ΩœÚ1: (0, 1)
-        nx = cx; ny = cy + 1;
-        if ((unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            ny += 1;
+            if ((unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (ny-y);
         }
         
         // ∑ΩœÚ2: (-1, 0)
-        nx = cx - 1; ny = cy;
-        if ((unsigned)nx < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx -= 1;
+            if ((unsigned)nx >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (x-nx);
         }
         
         // ∑ΩœÚ3: (0, -1)
-        nx = cx; ny = cy - 1;
-        if ((unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            ny -= 1;
+            if ((unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (y-ny);
         }
         
         // ∑ΩœÚ4: (1, 1)
-        nx = cx + 1; ny = cy + 1;
-        if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx += 1; ny += 1;
+            if ((unsigned)nx >= Size || (unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
         // ∑ΩœÚ5: (1, -1)
-        nx = cx + 1; ny = cy - 1;
-        if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx += 1; ny -= 1;
+            if ((unsigned)nx >= Size || (unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
         // ∑ΩœÚ6: (-1, 1)
-        nx = cx - 1; ny = cy + 1;
-        if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx -= 1; ny += 1;
+            if ((unsigned)nx >= Size || (unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (ny-y);
         }
         
         // ∑ΩœÚ7: (-1, -1)
-        nx = cx - 1; ny = cy - 1;
-        if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res[nx][ny] == -1)
+        nx=x, ny=y;
+        while (true)
         {
-            res[nx][ny] = res[cx][cy] + 1;
-            qx[tail] = nx;
-            qy[tail++] = ny;
+            nx -= 1; ny -= 1;
+            if ((unsigned)nx >= Size || (unsigned)ny >= Size || state.mp[nx][ny]!=0) break;
+            retmob += (double)(blankMobility[nx][ny]) / (y-ny);
         }
     }
     
@@ -1151,26 +1141,26 @@ double f1[32] = {0.0000, 0.1080, 0.1080, 0.1235, 0.1332, 0.1400,
 0.1468, 0.1565, 0.1720, 0.1949, 0.2217,
 0.2476, 0.2680, 0.2800, 0.2884, 0.3000,
 0.3208, 0.3535, 0.4000, 0.4613, 0.5350,
-0.6181, 0.7075, 0.8000, 0.8000, 0.8000,
-0.8000, 0.8000, 0.8000, 0.8000, 0.8000, 0.8000};
-double f2[32]={0.0000, 0.3940, 0.3940, 0.3826, 0.3753, 0.3700,
+0.6181, 0.7075, 0.8000, 1.0000, 1.0000,
+1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000};
+double f2[32]={1.0000, 0.3940, 0.3940, 0.3826, 0.3753, 0.3700,
 0.3647, 0.3574, 0.3460, 0.3294, 0.3098,
 0.2903, 0.2740, 0.2631, 0.2559, 0.2500,
 0.2430, 0.2334, 0.2200, 0.2020, 0.1800,
-0.1550, 0.1280, 0.1000, 0.1000, 0.1000,
-0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000};
+0.1550, 0.1280, 0.1000, 0.0000, 0.0000,
+0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000};
 double f3[32]={0.0000, 0.1160, 0.1160, 0.1224, 0.1267, 0.1300,
 0.1333, 0.1376, 0.1440, 0.1531, 0.1640,
 0.1754, 0.1860, 0.1944, 0.1995, 0.2000,
 0.1950, 0.1849, 0.1700, 0.1510, 0.1287,
-0.1038, 0.0773, 0.0500, 0.0500, 0.0500,
-0.0500, 0.0500, 0.0500, 0.0500, 0.0500, 0.0500};
+0.1038, 0.0773, 0.0500, 0.0000, 0.0000,
+0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000};
 double f4[32]={0.0000, 0.1160, 0.1160, 0.1224, 0.1267, 0.1300,
 0.1333, 0.1376, 0.1440, 0.1531, 0.1640,
 0.1754, 0.1860, 0.1944, 0.1995, 0.2000,
 0.1950, 0.1849, 0.1700, 0.1510, 0.1287,
-0.1038, 0.0773, 0.0500, 0.0500, 0.0500,
-0.0500, 0.0500, 0.0500, 0.0500, 0.0500, 0.0500};
+0.1038, 0.0773, 0.0500, 0.0000, 0.0000,
+0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000};
 double f5[32]={0.0000, 0.2300, 0.2300, 0.2159, 0.2067, 0.2000,
 0.1933, 0.1841, 0.1700, 0.1496, 0.1254,
 0.1010, 0.0800, 0.0652, 0.0557, 0.0500,
@@ -1246,7 +1236,7 @@ inline double CalcValue(const Situation &state,const int color)//π¿º€∫Ø ˝£¨¡Ó’˝÷
             
             // p1£∫Queen◊ﬂ∑®Œª÷√≤Ó
             if (wqm_valid && bqm_valid) {
-                //  π”√øÏÀŸ√›Ω¸À∆¥˙ÃÊpow∫Ø ˝
+                
                 const double wqm_pow = 1.0 / (1 << wqm);  // 2^(-wqm)
                 const double bqm_pow = 1.0 / (1 << bqm);  // 2^(-bqm)
                 p1 += 2 * (wqm_pow - bqm_pow);
@@ -1276,14 +1266,15 @@ inline double CalcValue(const Situation &state,const int color)//π¿º€∫Ø ˝£¨¡Ó’˝÷
             if (state.mp[x][y] == -1) 
             { 
                 const double tmp = CalcMobility(x, y, state);
-                WhiteMobility += tmp;
+                WhiteMobility  -= 100.0/(tmp+10);//Œ™ ≤√¥£ø’‚“ªŒ Ã‚÷µµ√Àºøº
+                //¥”Bot id=5e1aba34b63f9560371d0204 ÷–Œ“∑¢œ÷¡À’‚“ª∆Êπ÷µƒ–¥∑®°£Œ“»œŒ™£¨’‚ «Œ™¡À±‹√‚π˝∂‡µƒ◊ﬂ∑®≤¢≤ªƒ‹◊™ªØ≥… µº ”≈ ∆°£
                 //  π”√Œª‘ÀÀ„”≈ªØmin∫Ø ˝
                 // WhiteMinMobility = (tmp < WhiteMinMobility) ? tmp : WhiteMinMobility;
             }
             else if (state.mp[x][y] == 1) 
             { 
                 const double tmp = CalcMobility(x, y, state);
-                BlackMobility += tmp;
+                BlackMobility -= 100.0/(tmp+10);
                 // BlackMinMobility = (tmp < BlackMinMobility) ? tmp : BlackMinMobility;
             }
         }
@@ -1302,6 +1293,4 @@ inline double CalcValue(const Situation &state,const int color)//π¿º€∫Ø ˝£¨¡Ó’˝÷
     // }
     return total;
 }
-
-
 
