@@ -256,7 +256,7 @@ inline uint64_t hashSituation(const Situation &s)
     }
     return hash;
 }
-double TimeLimit=0.98;
+double TimeLimit=5.98;
 int PriorChoose;int search_depth=2;
 int max_move_count;
 
@@ -403,12 +403,14 @@ void Search()
     const short move_count = cur_move.size();
     
     Move best_move;
-    if (turnID<=7) PriorChoose=min(16,static_cast<int>(move_count)/15);
-    else if (turnID<=14) PriorChoose=min(12,static_cast<int>(move_count)/8);
-    else PriorChoose=static_cast<int>(move_count)/5;
+    if (turnID<=7) PriorChoose=min(24,static_cast<int>(move_count)/10);
+    else if (turnID<=14) PriorChoose=min(16,static_cast<int>(move_count)/5);
+    else PriorChoose=max(24,static_cast<int>(move_count)/3); 
     
-    if (PriorChoose<6) PriorChoose=6;
+    //if (PriorChoose<24) PriorChoose=12;
     if (PriorChoose>move_count) PriorChoose=move_count;
+
+    // PriorChoose=move_count;
     // ‘§∑÷≈‰ƒ⁄¥Ê”≈ªØ
     vector<pair<Move, double>> moves_with_score;
     moves_with_score.reserve(move_count);
@@ -434,7 +436,7 @@ void Search()
     while (clock()-BeginTime < time_limit)
     {
         if (BotColor==-1) best_score=-PreScore;else best_score=PreScore;
-        
+        double alpha=-PreScore,beta=PreScore;
         if (BotColor==-1)//white£®◊Ó¥ÛªØπ¿º€£©
         {
             const size_t last_idx = move_count - 1;
@@ -452,9 +454,16 @@ void Search()
                 
                 double score;
             
-                score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, 1);
-                
-            
+                //score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, 1);
+                if(i == start_idx) {  // µ⁄“ª∏ˆΩ⁄µ„£¨ÕÍ»´À—À˜
+                    score = AlphaBeta(ori_state, search_depth-1, alpha, beta, 1);
+                } else {  // ∫Û–¯Ω⁄µ„£¨¡„¥∞ø⁄À—À˜
+                    score = AlphaBeta(ori_state, search_depth-1, alpha, alpha+0.000001, 1);  //  
+                    if(score > alpha && score < beta) {  // »Áπ˚≤ª‘⁄¥∞ø⁄ƒ⁄£¨÷ÿ–¬À—À˜
+                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, 1);  // ÷ÿ–¬ÕÍ’˚À—À˜
+                    }
+                }
+               
                 RestoreMove(ori_state, bk);
                 if(score>best_score)
                 {
@@ -462,6 +471,8 @@ void Search()
                     best_move=now;
                     // cout<<score<<endl;
                 }
+                
+                alpha = max(best_score, alpha);
                 moves_with_score[i].second=score;
                 // printf("%d %d %d %d %d %d\n",now.ori_x,now.ori_y,now.goal_x,now.goal_y,now.arr_x,now.arr_y);
                 // cout<<score<<endl;
@@ -487,8 +498,16 @@ void Search()
                 //  π”√PVSÀ—À˜”≈ªØ
                 double score;
                 
-                score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, -1);
-                
+                //score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, -1);
+
+                if(i == 0) {  // µ⁄“ª∏ˆΩ⁄µ„£¨ÕÍ»´À—À˜
+                    score = AlphaBeta(ori_state, search_depth-1, alpha, beta, -1);
+                } else {  // ∫Û–¯Ω⁄µ„£¨¡„¥∞ø⁄À—À˜
+                    score = AlphaBeta(ori_state, search_depth-1, beta-0.000001, beta, -1);  //  
+                    if(score > alpha && score < beta) {  // »Áπ˚≤ª‘⁄¥∞ø⁄ƒ⁄£¨÷ÿ–¬À—À˜
+                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, -1);  // ÷ÿ–¬ÕÍ’˚À—À˜
+                    }
+                }
                 RestoreMove(ori_state, bk);
                 if(score<best_score)
                 {
@@ -496,6 +515,7 @@ void Search()
                     best_move=now;
                     
                 }
+                beta=min(beta,best_score);
                 // printf("%d %d %d %d %d %d\n",now.ori_x,now.ori_y,now.goal_x,now.goal_y,now.arr_x,now.arr_y);
                 // cout<<score<<endl;
 
@@ -1294,3 +1314,50 @@ inline double CalcValue(const Situation &state,const int color)//π¿º€∫Ø ˝£¨¡Ó’˝÷
     return total;
 }
 
+/*
+22
+-1 -1 -1 -1 -1 -1
+5 0 5 6 2 3
+7 5 3 1 1 3
+7 2 4 2 4 5
+5 7 7 5 7 1
+0 2 0 4 6 4
+2 7 2 5 6 1
+0 4 2 6 0 4
+2 5 4 3 1 0
+5 6 6 5 6 6
+0 5 2 5 0 7
+2 0 2 1 3 2
+4 3 5 3 5 7
+4 2 5 1 7 3
+3 1 2 0 7 0
+2 1 1 1 3 1
+5 3 5 2 5 6
+6 5 5 4 1 4
+7 5 6 5 5 5
+1 1 2 1 1 1
+2 0 3 0 6 0
+5 4 6 3 4 3
+5 2 4 2 5 2
+6 3 7 4 7 6
+4 2 3 3 3 7
+5 1 4 1 4 0
+3 3 2 2 0 2
+2 1 1 2 2 1
+2 2 3 3 5 1
+7 4 6 3 5 3
+2 5 1 6 1 5
+2 6 3 6 3 4
+1 6 2 6 2 5
+3 6 2 7 1 6
+6 5 5 4 4 4
+2 7 3 6 2 7
+3 3 2 4 4 2
+1 2 2 2 3 3
+2 4 3 5 4 6
+2 2 1 2 2 2
+3 5 2 4 3 5
+3 6 4 7 3 6
+2 6 1 7 2 6
+
+*/
