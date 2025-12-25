@@ -59,13 +59,12 @@ int BotColor=-1;//black=1,white=-1;
 #define Black 1
 #define White -1
 int BeginTime;
-struct __attribute__((packed)) Move
+struct alignas(8) Move
 {
     char ori_x, ori_y,
          goal_x, goal_y,
          arr_x, arr_y;
 };
-// 对齐优化：确保结构体内存对齐以提高访问速度
 struct alignas(32) Situation
 {
     signed char mp[8][8];
@@ -76,7 +75,6 @@ constexpr int dy[8]={0,1,0,-1,1,-1,1,-1};
 int turnID;
 inline void GenerateMove(vector<Move> &cur,const Situation &state,int color);
 Situation bfs(Situation state,int color);
-// 使用aligned_alloc优化内存拷贝
 inline Situation CopyState(const Situation &s)
 {
     Situation res;
@@ -85,8 +83,7 @@ inline Situation CopyState(const Situation &s)
     return res;
 }
 // 新增：记录状态修改用于回溯
-// 使用packed属性优化内存布局
-struct __attribute__((packed)) StateBackup 
+struct StateBackup 
 {
     char ori_x, ori_y, goal_x, goal_y, arr_x, arr_y;
     char val_ori, val_goal, val_arr;
@@ -210,8 +207,8 @@ constexpr int PreScore=10000;
 #define EXACT 1
 #define LOWERBOUND 2
 #define UPPERBOUND 3
-// 使用packed属性优化内存布局，提高缓存效率
-struct __attribute__((packed)) TTEntry {
+// 使用alignas优化内存布局，提高缓存效率
+struct alignas(16) TTEntry {
     int depth;       // 搜索深度
     double score;    // 评估分数
     int flag;        // 分数类型
@@ -256,8 +253,8 @@ inline uint64_t hashSituation(const Situation &s)
     }
     return hash;
 }
-double TimeLimit=5.98;
-int PriorChoose;int search_depth=2;
+double TimeLimit=0.98;
+int PriorChoose=0;int search_depth=2;
 int max_move_count;
 
 // PVS搜索优化版本
@@ -403,12 +400,12 @@ void Search()
     const short move_count = cur_move.size();
     
     Move best_move;
-    if (turnID<=7) PriorChoose=min(24,static_cast<int>(move_count)/10);
-    else if (turnID<=14) PriorChoose=min(16,static_cast<int>(move_count)/5);
-    else PriorChoose=max(24,static_cast<int>(move_count)/3); 
+    // if (turnID<=7) PriorChoose=min(24,static_cast<int>(move_count)/10);
+    // else if (turnID<=14) PriorChoose=min(16,static_cast<int>(move_count)/5);
+    // else PriorChoose=max(24,static_cast<int>(move_count)/3); 
     
-    //if (PriorChoose<24) PriorChoose=12;
-    if (PriorChoose>move_count) PriorChoose=move_count;
+    // //if (PriorChoose<24) PriorChoose=12;
+    // if (PriorChoose>move_count) PriorChoose=move_count;
 
     // PriorChoose=move_count;
     // 预分配内存优化
@@ -427,7 +424,41 @@ void Search()
     sort(moves_with_score.begin(), moves_with_score.end(),
         [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
     
+    double MaxDelta=moves_with_score[move_count-1].second - moves_with_score[0].second;
+    
+    // if (turnID<=7) MaxDelta/=10.0;
+    // else if (turnID<=14) MaxDelta/=5.0;
+    // else MaxDelta/=3.0;
+
+    if (turnID<=7) MaxDelta/=(16.0-turnID*1.33);
+    else if (turnID<=14) MaxDelta/=(5.5-(turnID-7)*0.33);
+    else MaxDelta/=(3.2-(turnID-14)*0.15);
+    
+    // cout<<MaxDelta;
+    if (BotColor==White) 
+    {
+        for (int i=move_count-1;i>=0;--i) 
+            if (moves_with_score[move_count-1].second - moves_with_score[i].second > MaxDelta)
+                {PriorChoose=move_count-i;break;}
+    }
+    else 
+    {
+        for (int i=1;i<move_count;++i) 
+            if (moves_with_score[i].second - moves_with_score[0].second > MaxDelta)
+                {PriorChoose=i;break;}
+    }
+    if (PriorChoose==0) PriorChoose=move_count;
+    
+    PriorChoose=max(16,PriorChoose);
+    PriorChoose=min(36,PriorChoose); 
+    PriorChoose=min(PriorChoose,(int)move_count); 
+    
+
+    // PriorChoose=move_count;
+    //if (PriorChoose<24) PriorChoose=12;
+   
     double pre_best_score,best_score;Move pre_best_move=moves_with_score[(BotColor==White)?(0):(move_count-1)].first;
+
     
     // 时间限制
     const clock_t time_limit = static_cast<clock_t>(TimeLimit*CLOCKS_PER_SEC);
@@ -543,7 +574,8 @@ void Search()
     printf("%d %d %d %d %d %d\n",pre_best_move.ori_x,pre_best_move.ori_y,pre_best_move.goal_x,pre_best_move.goal_y,pre_best_move.arr_x,pre_best_move.arr_y);
     
     //debug
-    cout<<search_depth<<" "<<cur_move.size()<<" "<<PriorChoose<<" "<<clock()-BeginTime<<" "<<best_score<<" "<<pre_best_score<<endl;
+    //cout<<search_depth<<" "<<cur_move.size()<<" "<<PriorChoose<<" "<<clock()-BeginTime<<" "<<best_score<<" "<<pre_best_score<<endl;
+    printf("depth=%d,move=%d,Prior=%d,MaxD=%lf,time=%d,score=%lf\n",search_depth-2,move_count,PriorChoose,MaxDelta,(int)clock()-BeginTime,pre_best_score);
 }
 bool Mirrorok=1;
 void Mirror(int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y)
