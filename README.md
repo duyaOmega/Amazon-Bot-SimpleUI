@@ -9,7 +9,7 @@ Github的代码可能不会及时更新，但其应该不需要什么更新，�
 文件中：
 - ~~amazon-super_ver.cpp 是可用于在 Botzone 上运行的 Bot。~~ 该文件已过时。
 
-- amazon-PVS_ver.cpp 是最新的成果，引入了PVS优化且修复了一些bug。这是 BotZone 上的版本117.
+- amazon-PVS_ver.cpp 是最新的成果，引入了PVS优化且修复了一些bug。这是 BotZone 上的版本119.截至目前(2026.01.10)，其天梯分数为1601.38.
 
 - 实验报告.pptx 简要展示了本项目的亮点。
 
@@ -25,4 +25,6 @@ Github的代码可能不会及时更新，但其应该不需要什么更新，�
 
 <img width="1201" height="1232" alt="屏幕截图 2025-12-25 172710" src="https://github.com/user-attachments/assets/e78fe8a7-6ad2-442c-829f-9e9d2eac8367" />
 
-<img width="1234" height="670" alt="image" src="https://github.com/user-attachments/assets/fc3213e1-381a-4bb4-87a9-e7d2f8198943" />
+<img width="1235" height="673" alt="image" src="https://github.com/user-attachments/assets/ef9fa0fe-7dbe-4524-a582-9bac67013499" />
+
+<img width="1239" height="672" alt="image" src="https://github.com/user-attachments/assets/a1068dff-2529-4e5d-94fa-a597884a45b0" />
