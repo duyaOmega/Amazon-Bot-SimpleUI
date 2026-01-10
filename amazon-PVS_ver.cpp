@@ -78,17 +78,17 @@ Situation bfs(Situation state,int color);
 inline Situation CopyState(const Situation &s)
 {
     Situation res;
-    // Ê¹ÓÃ±àÒëÆ÷ÄÚÖÃº¯Êı½øĞĞ¿ìËÙÄÚ´æ¿½±´
+    // ä½¿ç”¨ç¼–è¯‘å™¨å†…ç½®å‡½æ•°è¿›è¡Œå¿«é€Ÿå†…å­˜æ‹·è´
     __builtin_memcpy(res.mp, s.mp, sizeof(s.mp));
     return res;
 }
-// ĞÂÔö£º¼ÇÂ¼×´Ì¬ĞŞ¸ÄÓÃÓÚ»ØËİ
+// æ–°å¢ï¼šè®°å½•çŠ¶æ€ä¿®æ”¹ç”¨äºå›æº¯
 struct StateBackup 
 {
     char ori_x, ori_y, goal_x, goal_y, arr_x, arr_y;
     char val_ori, val_goal, val_arr;
 };
-// Ó¦ÓÃÒÆ¶¯²¢±¸·İ×´Ì¬ - ÓÅ»¯ÄÚ´æ·ÃÎÊË³Ğò
+// åº”ç”¨ç§»åŠ¨å¹¶å¤‡ä»½çŠ¶æ€ - ä¼˜åŒ–å†…å­˜è®¿é—®é¡ºåº
 inline StateBackup ApplyMoveWithBackup(Situation &s, Move m, int color) 
 {
     StateBackup bk;
@@ -108,7 +108,7 @@ inline StateBackup ApplyMoveWithBackup(Situation &s, Move m, int color)
     s.mp[static_cast<signed char>(bk.arr_x)][static_cast<signed char>(bk.arr_y)] = 2;
     return bk;
 }
-// »Ö¸´×´Ì¬
+// æ¢å¤çŠ¶æ€
 inline void RestoreMove(Situation &s, const StateBackup &bk) 
 {
     
@@ -153,13 +153,13 @@ bool CheckRoad(const Situation &state,int ori_x,int ori_y,int goal_x,int goal_y)
         const int dx = goal_x - ori_x;
         const int dy = goal_y - ori_y;
         
-        // Ê¹ÓÃÎ»ÔËËãÓÅ»¯¾ø¶ÔÖµ±È½Ï
+        // ä½¿ç”¨ä½è¿ç®—ä¼˜åŒ–ç»å¯¹å€¼æ¯”è¾ƒ
         const int abs_dx = (dx ^ (dx >> 31)) - (dx >> 31);
         const int abs_dy = (dy ^ (dy >> 31)) - (dy >> 31);
         
         if (abs_dx != abs_dy) return false;
         
-        const int fhx = (dx >> 31) | 1;  // È¡·ûºÅÎ»²¢ÉèÖÃÎª1»ò-1
+        const int fhx = (dx >> 31) | 1;  // å–ç¬¦å·ä½å¹¶è®¾ç½®ä¸º1æˆ–-1
         const int fhy = (dy >> 31) | 1;
         
         int x = ori_x, y = ori_y;
@@ -173,22 +173,22 @@ bool CheckRoad(const Situation &state,int ori_x,int ori_y,int goal_x,int goal_y)
 }
 bool Check(Situation &state,int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y,int color)
 {
-    // ±ß½ç¼ì²é
+    // è¾¹ç•Œæ£€æŸ¥
     if ((unsigned)goal_x >= Size || (unsigned)goal_y >= Size || 
         (unsigned)arr_x >= Size || (unsigned)arr_y >= Size) return false;
     
-    // ÖØĞÂÅÅÁĞÌõ¼şÒÔ¾¡Ôç·µ»Ø
+    // é‡æ–°æ’åˆ—æ¡ä»¶ä»¥å°½æ—©è¿”å›
     if (state.mp[ori_x][ori_y] != color) return false;
     if (state.mp[goal_x][goal_y] != 0) return false;
     
-    // ¼ıÍ·Î»ÖÃ¼ì²éÓÅ»¯
+    // ç®­å¤´ä½ç½®æ£€æŸ¥ä¼˜åŒ–
     if ((arr_x != ori_x || arr_y != ori_y) && state.mp[arr_x][arr_y] != 0) return false;
     
-    // ±£´æÔ­Ê¼ÖµÒÔ»Ö¸´×´Ì¬
+    // ä¿å­˜åŸå§‹å€¼ä»¥æ¢å¤çŠ¶æ€
     const char original_value = state.mp[ori_x][ori_y];
     state.mp[ori_x][ori_y] = 0;
     
-    // Â·¾¶¼ì²éÓÅ»¯
+    // è·¯å¾„æ£€æŸ¥ä¼˜åŒ–
     const bool road1_ok = CheckRoad(state, ori_x, ori_y, goal_x, goal_y);
     if (!road1_ok) {
         state.mp[ori_x][ori_y] = original_value;
@@ -196,7 +196,7 @@ bool Check(Situation &state,int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,
     }
     
     const bool road2_ok = CheckRoad(state, goal_x, goal_y, arr_x, arr_y);
-    state.mp[ori_x][ori_y] = original_value;  // »Ö¸´Ô­Ê¼×´Ì¬
+    state.mp[ori_x][ori_y] = original_value;  // æ¢å¤åŸå§‹çŠ¶æ€
     
     return road2_ok;
 }
@@ -207,19 +207,19 @@ constexpr int PreScore=10000;
 #define EXACT 1
 #define LOWERBOUND 2
 #define UPPERBOUND 3
-// Ê¹ÓÃalignasÓÅ»¯ÄÚ´æ²¼¾Ö£¬Ìá¸ß»º´æĞ§ÂÊ
+// ä½¿ç”¨alignasä¼˜åŒ–å†…å­˜å¸ƒå±€ï¼Œæé«˜ç¼“å­˜æ•ˆç‡
 struct alignas(16) TTEntry {
-    int depth;       // ËÑË÷Éî¶È
-    double score;    // ÆÀ¹À·ÖÊı
-    int flag;        // ·ÖÊıÀàĞÍ
+    int depth;       // æœç´¢æ·±åº¦
+    double score;    // è¯„ä¼°åˆ†æ•°
+    int flag;        // åˆ†æ•°ç±»å‹
 };
 
 unordered_map<uint64_t, TTEntry> transpositionTable;
-const int StateCount = 4; // 4ÖÖ×´Ì¬£º0/1/-1/2
-// Ô¤Éú³ÉZobristËæ»úÊı±í
+const int StateCount = 4; // 4ç§çŠ¶æ€ï¼š0/1/-1/2
+// é¢„ç”ŸæˆZobristéšæœºæ•°è¡¨
 uint64_t ZobristTable[Size][Size][StateCount];
 
-// ³õÊ¼»¯Zobrist±í
+// åˆå§‹åŒ–Zobristè¡¨
 void initZobrist() 
 {
     mt19937_64 rng(20070702); 
@@ -227,7 +227,7 @@ void initZobrist()
     for (short i = 0; i < Size; ++i) {
         for (short j = 0; j < (Size>>1); ++j) 
         {
-            // Õ¹¿ªStateCountÑ­»·
+            // å±•å¼€StateCountå¾ªç¯
             ZobristTable[i][j][0] = ZobristTable[i][Size-j-1][0] =dist(rng);
             ZobristTable[i][j][1] = ZobristTable[i][Size-j-1][1] =dist(rng);
             ZobristTable[i][j][2] = ZobristTable[i][Size-j-1][2] =dist(rng);
@@ -235,29 +235,29 @@ void initZobrist()
         }
     }
 }
-//hash¼ÆËã£¬Ê¹ÓÃZobrist¹şÏ£·½·¨
+//hashè®¡ç®—ï¼Œä½¿ç”¨Zobristå“ˆå¸Œæ–¹æ³•
 inline uint64_t hashSituation(const Situation &s) 
 {
     uint64_t hash = 0;
     for (short i = 0; i < Size; ++i) {
         for (short j = 0; j < Size; ++j) 
         {
-            // Ê¹ÓÃswitch´úÌæ¶àÖØif-elseÌáÉıĞÔÄÜ
+            // ä½¿ç”¨switchä»£æ›¿å¤šé‡if-elseæå‡æ€§èƒ½
             switch (s.mp[i][j]) {
                 case 1:  hash ^= ZobristTable[i][j][1]; break;
                 case -1: hash ^= ZobristTable[i][j][2]; break;
                 case 2:  hash ^= ZobristTable[i][j][3]; break;
-                default: hash ^= ZobristTable[i][j][0]; break; // 0µÄÇé¿ö
+                default: hash ^= ZobristTable[i][j][0]; break; // 0çš„æƒ…å†µ
             }
         }
     }
     return hash;
 }
-double TimeLimit=0.98;
+double TimeLimit=0.99;
 int PriorChoose=0;int search_depth=2;
 int max_move_count;
 
-// PVSËÑË÷ÓÅ»¯°æ±¾
+// PVSæœç´¢ä¼˜åŒ–ç‰ˆæœ¬
 double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color) 
 {
     uint64_t hash = hashSituation(s);
@@ -265,7 +265,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
     if (it != transpositionTable.end())
     {
         TTEntry entry = it->second;
-        // Èô»º´æµÄÉî¶È >= µ±Ç°ËÑË÷Éî¶È£¬Ö±½ÓÊ¹ÓÃ»º´æ½á¹û
+        // è‹¥ç¼“å­˜çš„æ·±åº¦ >= å½“å‰æœç´¢æ·±åº¦ï¼Œç›´æ¥ä½¿ç”¨ç¼“å­˜ç»“æœ
         if (entry.depth >= depth) 
         {
             if (entry.flag == EXACT) return entry.score;
@@ -280,20 +280,20 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
 
     if(depth == 0) 
     {
-        return CalcValue(s,-color);//ÒòÎª´ËÊ±±¾·½²¢Ã»ÓĞ×ßÆå£¬¸ù¾İ¶¨ÒåÓ¦¸Ã´«Èë-Color
+        return CalcValue(s,-color);//å› ä¸ºæ­¤æ—¶æœ¬æ–¹å¹¶æ²¡æœ‰èµ°æ£‹ï¼Œæ ¹æ®å®šä¹‰åº”è¯¥ä¼ å…¥-Color
     }
     
-    // Ê±¼ä¿ØÖÆÓÅ»¯£ºÌáÇ°¼ÆËãÊ±¼äÏŞÖÆ
+    // æ—¶é—´æ§åˆ¶ä¼˜åŒ–ï¼šæå‰è®¡ç®—æ—¶é—´é™åˆ¶
     const clock_t time_limit = TimeLimit*CLOCKS_PER_SEC;
     if (clock()-BeginTime > time_limit) return CalcValue(s,-color);
     
-    //»òĞíĞèÒª½øÒ»²½µ÷²Î¿¨Ê±
+    //æˆ–è®¸éœ€è¦è¿›ä¸€æ­¥è°ƒå‚å¡æ—¶
     vector<Move> moves;
     moves.reserve(max_move_count);
     GenerateMove(moves,s,color);
     if(moves.empty()) 
     {
-        // ÎŞºÏ·¨×ß·¨£¬µ±Ç°ÑÕÉ«Êä
+        // æ— åˆæ³•èµ°æ³•ï¼Œå½“å‰é¢œè‰²è¾“
         return (color == Black) ? PreScore : -PreScore;
     }
 
@@ -301,7 +301,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
     vector<pair<Move, double>> moves_with_score;
     moves_with_score.reserve(move_count);
     
-    // ÆÀ¹Àº¯ÊıÓÅ»¯£º±ÜÃâÖØ¸´¼ÆËã
+    // è¯„ä¼°å‡½æ•°ä¼˜åŒ–ï¼šé¿å…é‡å¤è®¡ç®—
     for (short i = 0; i < move_count; ++i) 
     {
         StateBackup bk = ApplyMoveWithBackup(s, moves[i], color);
@@ -310,45 +310,45 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
         moves_with_score.emplace_back(moves[i], score);
     }
     
-    //°´·ÖÊıÅÅĞò£¬ÏÈËÑ¿´ÆğÀ´ºÃµÄ
+    //æŒ‰åˆ†æ•°æ’åºï¼Œå…ˆæœçœ‹èµ·æ¥å¥½çš„
     sort(moves_with_score.begin(), moves_with_score.end(),
         [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
     
     double result;
-    //PVSËÑË÷ÓÅ»¯
-    if (color==White) // °×·½×î´ó»¯
+    //PVSæœç´¢ä¼˜åŒ–
+    if (color==White) // ç™½æ–¹æœ€å¤§åŒ–
     { 
         double MaxValue = -PreScore;
         const int start_idx = static_cast<int>(move_count) - 1;
-        const int end_idx = max(0, static_cast<int>(move_count) - PriorChoose);
+        const int end_idx = max(0, static_cast<int>(move_count) - PriorChoose-(int)((search_depth-depth)*(turnID<=7 ? 2.5 :(turnID<=14 ? 1.5 : 1))));
         
         for (short i=start_idx; i>=end_idx; --i) 
-        //Ö»ËÑ×î´óPriorChooseÖÖ
+        //åªæœæœ€å¤§PriorChooseç§
         {
             Move now = moves_with_score[i].first;
             StateBackup bk = ApplyMoveWithBackup(s, now, color);
             
             double value;
-            if(i == start_idx) {  // µÚÒ»¸ö½Úµã£¬ÍêÈ«ËÑË÷
+            if(i == start_idx) {  // ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ï¼Œå®Œå…¨æœç´¢
                 value = AlphaBeta(s, depth-1, alpha, beta, -color);
-            } else {  // ºóĞø½Úµã£¬Áã´°¿ÚËÑË÷
+            } else {  // åç»­èŠ‚ç‚¹ï¼Œé›¶çª—å£æœç´¢
                 value = AlphaBeta(s, depth-1, alpha, alpha+0.000001, -color);  //  
-                if(value > alpha && value < beta) {  // Èç¹û²»ÔÚ´°¿ÚÄÚ£¬ÖØĞÂËÑË÷
-                    value = AlphaBeta(s, depth-1, alpha, beta, -color);  // ÖØĞÂÍêÕûËÑË÷
+                if(value > alpha && value < beta) {  // å¦‚æœä¸åœ¨çª—å£å†…ï¼Œé‡æ–°æœç´¢
+                    value = AlphaBeta(s, depth-1, alpha, beta, -color);  // é‡æ–°å®Œæ•´æœç´¢
                 }
             }
             
             RestoreMove(s, bk);
             MaxValue = max(MaxValue, value);
             alpha = max(MaxValue, alpha);
-            if(beta <= alpha) break;// Beta¼ôÖ¦,¶ÔÊÖÄÜ¸ø³öµÄ×îµÍµÃ·Ö£¨beta£©¡Üµ±Ç°×î¸ßµÃ·Ö£¨alpha£©£¬ÎŞĞèÔÙ±éÀú
+            if(beta <= alpha) break;// Betaå‰ªæ,å¯¹æ‰‹èƒ½ç»™å‡ºçš„æœ€ä½å¾—åˆ†ï¼ˆbetaï¼‰â‰¤å½“å‰æœ€é«˜å¾—åˆ†ï¼ˆalphaï¼‰ï¼Œæ— éœ€å†éå†
         }
         result = MaxValue;
     } 
-    else // ºÚ·½×îĞ¡»¯
+    else // é»‘æ–¹æœ€å°åŒ–
     { 
         double MinValue = PreScore;
-        const int end_idx = min(static_cast<int>(move_count), PriorChoose);
+        const int end_idx = min(static_cast<int>(move_count), PriorChoose-(int)((search_depth-depth)*(turnID<=7 ? 2.5 :(turnID<=14 ? 1.5 : 1))));
         
         for (short i=0; i<end_idx; ++i) 
         {
@@ -356,25 +356,25 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
             StateBackup bk = ApplyMoveWithBackup(s, now, color);
             
             double value;
-            if(i == 0) {  // µÚÒ»¸ö½Úµã£¬ÍêÈ«ËÑË÷
+            if(i == 0) {  // ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ï¼Œå®Œå…¨æœç´¢
                 value = AlphaBeta(s, depth-1, alpha, beta, -color);
-            } else {  // ºóĞø½Úµã£¬Áã´°¿ÚËÑË÷
-                value = AlphaBeta(s, depth-1, beta-0.000001, beta, -color);  // Áã´°¿ÚËÑË÷
-                if(value > alpha && value < beta) {  // Èç¹û²»ÔÚ´°¿ÚÄÚ£¬ÖØĞÂËÑË÷
-                    value = AlphaBeta(s, depth-1, alpha, beta, -color);  // ÖØĞÂÍêÕûËÑË÷
+            } else {  // åç»­èŠ‚ç‚¹ï¼Œé›¶çª—å£æœç´¢
+                value = AlphaBeta(s, depth-1, beta-0.000001, beta, -color);  // é›¶çª—å£æœç´¢
+                if(value > alpha && value < beta) {  // å¦‚æœä¸åœ¨çª—å£å†…ï¼Œé‡æ–°æœç´¢
+                    value = AlphaBeta(s, depth-1, alpha, beta, -color);  // é‡æ–°å®Œæ•´æœç´¢
                 }
             }
             
             RestoreMove(s, bk);
             MinValue = min(MinValue, value);
             beta = min(beta, MinValue);
-            if(beta <= alpha) break;// Alpha¼ôÖ¦,µ±Ç°×îµÍµÃ·Ö£¨beta£©¡Ü¼º·½ÄÜ½ÓÊÜµÄ×î¸ßµÃ·Ö£¨alpha£©£¬ÎŞĞèÔÙ±éÀú
+            if(beta <= alpha) break;// Alphaå‰ªæ,å½“å‰æœ€ä½å¾—åˆ†ï¼ˆbetaï¼‰â‰¤å·±æ–¹èƒ½æ¥å—çš„æœ€é«˜å¾—åˆ†ï¼ˆalphaï¼‰ï¼Œæ— éœ€å†éå†
         }
         result = MinValue;
     }
     
-    // ×ªÖÃ±í¸üĞÂÓÅ»¯£º¼õÉÙ²»±ØÒªµÄ¿½±´
-    TTEntry &entry = transpositionTable[hash]; // Ö±½ÓÒıÓÃ»ò´´½¨
+    // è½¬ç½®è¡¨æ›´æ–°ä¼˜åŒ–ï¼šå‡å°‘ä¸å¿…è¦çš„æ‹·è´
+    TTEntry &entry = transpositionTable[hash]; // ç›´æ¥å¼•ç”¨æˆ–åˆ›å»º
     entry.depth = depth;
     entry.score = result;
     if (result <= alpha) {
@@ -388,7 +388,7 @@ double AlphaBeta(Situation &s, int depth, double alpha, double beta, int color)
     return result;
 }
 
-// µü´ú¼ÓÉî + PVSËÑË÷
+// è¿­ä»£åŠ æ·± + PVSæœç´¢
 void Search()
 {
     vector<Move> cur_move ;
@@ -396,7 +396,7 @@ void Search()
     GenerateMove(cur_move,ori_state, BotColor);
     max_move_count=cur_move.size();
     
-    // ÌáÇ°¼ÆËã´óĞ¡£¬±ÜÃâÖØ¸´µ÷ÓÃsize()
+    // æå‰è®¡ç®—å¤§å°ï¼Œé¿å…é‡å¤è°ƒç”¨size()
     const short move_count = cur_move.size();
     
     Move best_move;
@@ -408,11 +408,11 @@ void Search()
     // if (PriorChoose>move_count) PriorChoose=move_count;
 
     // PriorChoose=move_count;
-    // Ô¤·ÖÅäÄÚ´æÓÅ»¯
+    // é¢„åˆ†é…å†…å­˜ä¼˜åŒ–
     vector<pair<Move, double>> moves_with_score;
     moves_with_score.reserve(move_count);
     
-    // ÆÀ¹Àº¯ÊıÓÅ»¯
+    // è¯„ä¼°å‡½æ•°ä¼˜åŒ–
     for (short i = 0; i < move_count; ++i) {
         StateBackup bk = ApplyMoveWithBackup(ori_state, cur_move[i], BotColor);
         double score = CalcValue(ori_state,BotColor);
@@ -420,7 +420,7 @@ void Search()
         moves_with_score.emplace_back(cur_move[i], score);
     }
 
-    // ÅÅĞòÓÅ»¯£ºÊ¹ÓÃconstÒıÓÃ
+    // æ’åºä¼˜åŒ–ï¼šä½¿ç”¨constå¼•ç”¨
     sort(moves_with_score.begin(), moves_with_score.end(),
         [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
     
@@ -450,7 +450,7 @@ void Search()
     if (PriorChoose==0) PriorChoose=move_count;
     
     PriorChoose=max(16,PriorChoose);
-    PriorChoose=min(36,PriorChoose); 
+    PriorChoose=min(32,PriorChoose); 
     PriorChoose=min(PriorChoose,(int)move_count); 
     
 
@@ -460,15 +460,15 @@ void Search()
     double pre_best_score,best_score;Move pre_best_move=moves_with_score[(BotColor==White)?(0):(move_count-1)].first;
 
     
-    // Ê±¼äÏŞÖÆ
+    // æ—¶é—´é™åˆ¶
     const clock_t time_limit = static_cast<clock_t>(TimeLimit*CLOCKS_PER_SEC);
     
-    // µü´ú¼ÓÉîËÑË÷
+    // è¿­ä»£åŠ æ·±æœç´¢
     while (clock()-BeginTime < time_limit)
     {
         if (BotColor==-1) best_score=-PreScore;else best_score=PreScore;
         double alpha=-PreScore,beta=PreScore;
-        if (BotColor==-1)//white£¨×î´ó»¯¹À¼Û£©
+        if (BotColor==-1)//whiteï¼ˆæœ€å¤§åŒ–ä¼°ä»·ï¼‰
         {
             const size_t last_idx = move_count - 1;
             best_move=moves_with_score[last_idx].first;
@@ -476,7 +476,7 @@ void Search()
             const int start_idx = static_cast<int>(move_count)-1;
             const int end_idx = max(0, static_cast<int>(move_count)-PriorChoose);
             
-            // µ¥Ïß³ÌËÑË÷
+            // å•çº¿ç¨‹æœç´¢
             for (short i=start_idx; i>=end_idx; --i) 
             {
                 Move now=moves_with_score[i].first;
@@ -486,15 +486,17 @@ void Search()
                 double score;
             
                 //score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, 1);
-                if(i == start_idx) {  // µÚÒ»¸ö½Úµã£¬ÍêÈ«ËÑË÷
+                if(i == start_idx) {  // ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ï¼Œå®Œå…¨æœç´¢
                     score = AlphaBeta(ori_state, search_depth-1, alpha, beta, 1);
-                } else {  // ºóĞø½Úµã£¬Áã´°¿ÚËÑË÷
+                } else {  // åç»­èŠ‚ç‚¹ï¼Œé›¶çª—å£æœç´¢
                     score = AlphaBeta(ori_state, search_depth-1, alpha, alpha+0.000001, 1);  //  
-                    if(score > alpha && score < beta) {  // Èç¹û²»ÔÚ´°¿ÚÄÚ£¬ÖØĞÂËÑË÷
-                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, 1);  // ÖØĞÂÍêÕûËÑË÷
+                    if(score > alpha && score < beta) {  // å¦‚æœä¸åœ¨çª—å£å†…ï¼Œé‡æ–°æœç´¢
+                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, 1);  // é‡æ–°å®Œæ•´æœç´¢
                     }
                 }
                
+
+
                 RestoreMove(ori_state, bk);
                 if(score>best_score)
                 {
@@ -505,7 +507,8 @@ void Search()
                 
                 alpha = max(best_score, alpha);
                 moves_with_score[i].second=score;
-                // printf("%d %d %d %d %d %d\n",now.ori_x,now.ori_y,now.goal_x,now.goal_y,now.arr_x,now.arr_y);
+                //printf("ID=%d   :   %d %d %d %d %d %d\n",i,now.ori_x,now.ori_y,now.goal_x,now.goal_y,now.arr_x,now.arr_y);
+                
                 // cout<<score<<endl;
             }
             
@@ -513,30 +516,30 @@ void Search()
             sort(moves_with_score.begin() + sort_start, moves_with_score.end(),
             [](const pair<Move, double> &a, const pair<Move, double> &b) { return a.second < b.second; });
         }
-        else//black£¨×îĞ¡»¯¹À¼Û£¬Òò¹À¼ÛÕıÖµ¶Ô°×ÓĞÀû£©
+        else//blackï¼ˆæœ€å°åŒ–ä¼°ä»·ï¼Œå› ä¼°ä»·æ­£å€¼å¯¹ç™½æœ‰åˆ©ï¼‰
         {
             best_score=PreScore;
             best_move=moves_with_score[0].first;
             
             const int end_idx = min(static_cast<int>(move_count), PriorChoose);
             
-            // µ¥Ïß³ÌËÑË÷
+            // å•çº¿ç¨‹æœç´¢
             for (short i=0; i<end_idx; ++i) 
             {
                 Move now=moves_with_score[i].first;
                 StateBackup bk = ApplyMoveWithBackup(ori_state, now, BotColor);
                 
-                // Ê¹ÓÃPVSËÑË÷ÓÅ»¯
+                // ä½¿ç”¨PVSæœç´¢ä¼˜åŒ–
                 double score;
                 
                 //score = AlphaBeta(ori_state, search_depth-1, -PreScore, PreScore, -1);
 
-                if(i == 0) {  // µÚÒ»¸ö½Úµã£¬ÍêÈ«ËÑË÷
+                if(i == 0) {  // ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ï¼Œå®Œå…¨æœç´¢
                     score = AlphaBeta(ori_state, search_depth-1, alpha, beta, -1);
-                } else {  // ºóĞø½Úµã£¬Áã´°¿ÚËÑË÷
+                } else {  // åç»­èŠ‚ç‚¹ï¼Œé›¶çª—å£æœç´¢
                     score = AlphaBeta(ori_state, search_depth-1, beta-0.000001, beta, -1);  //  
-                    if(score > alpha && score < beta) {  // Èç¹û²»ÔÚ´°¿ÚÄÚ£¬ÖØĞÂËÑË÷
-                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, -1);  // ÖØĞÂÍêÕûËÑË÷
+                    if(score > alpha && score < beta) {  // å¦‚æœä¸åœ¨çª—å£å†…ï¼Œé‡æ–°æœç´¢
+                        score = AlphaBeta(ori_state, search_depth-1, alpha, beta, -1);  // é‡æ–°å®Œæ•´æœç´¢
                     }
                 }
                 RestoreMove(ori_state, bk);
@@ -551,7 +554,8 @@ void Search()
                 // cout<<score<<endl;
 
                 moves_with_score[i].second=score;
-
+                // if (now.ori_x==5&&now.ori_y==3&&now.goal_x==5&&now.goal_y==2&&now.arr_x==5&&now.arr_y==3)
+                //     cout<<search_depth<<"   "<<score<<"\n";
                 // if (now.ori_x==2&&now.ori_y==0&&now.goal_x==4&&now.goal_y==0&&now.arr_x==2&&now.arr_y==0)
                 // {
                 //     cout<<score<<endl;
@@ -585,10 +589,10 @@ void Mirror(int ori_x,int ori_y,int goal_x,int goal_y,int arr_x,int arr_y)
     // {
     //     printf("%d %d %d %d %d %d\n",nx,ny,ngx,ngy,nax,nay);
     // }
-    //Èç¹û¿ÉÒÔ£¬×ÜÊÇ³¢ÊÔÓë¶ÔÊÖ¶Ô³Æ×ßÆå£¬ÕâÑùÊÇÑÏ¸ñ²»ÁÓµÄ¡£½öÔÚ°×·½Ê¹ÓÃ¡£¼õÉÙÇ°ÆÚÔËËã¡£
-    //ÏÖÔÚ¸ü¸ÄÎª½öÔÚÇ°4»ØºÏ¿¼ÂÇ¶Ô³Æ
-    //·ñÔò£¬Ê¹ÓÃËæ»ú¡£
-    //ÏÖÔÚÉı¼¶³ÉÊ¹ÓÃAlpha-BetaËÑË÷¡£
+    //å¦‚æœå¯ä»¥ï¼Œæ€»æ˜¯å°è¯•ä¸å¯¹æ‰‹å¯¹ç§°èµ°æ£‹ï¼Œè¿™æ ·æ˜¯ä¸¥æ ¼ä¸åŠ£çš„ã€‚ä»…åœ¨ç™½æ–¹ä½¿ç”¨ã€‚å‡å°‘å‰æœŸè¿ç®—ã€‚
+    //ç°åœ¨æ›´æ”¹ä¸ºä»…åœ¨å‰4å›åˆè€ƒè™‘å¯¹ç§°
+    //å¦åˆ™ï¼Œä½¿ç”¨éšæœºã€‚
+    //ç°åœ¨å‡çº§æˆä½¿ç”¨Alpha-Betaæœç´¢ã€‚
     // else 
     // if (turnID==2 && BotColor==1)
     // {
@@ -677,19 +681,19 @@ void GetSituation()
 inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
 {
     // vector<Move> cur;
-    // Ñ­»·Õ¹¿ªÓÅ»¯£º½«8¸ö·½ÏòµÄÑ­»·Õ¹¿ª
+    // å¾ªç¯å±•å¼€ä¼˜åŒ–ï¼šå°†8ä¸ªæ–¹å‘çš„å¾ªç¯å±•å¼€
     for (short ori_x=0;ori_x<Size;++ori_x)
     for (short ori_y=0;ori_y<Size;++ori_y)
     {
         if (state.mp[ori_x][ori_y] != color)
                 continue;
         
-        // ·½Ïò0: (1, 0)
+        // æ–¹å‘0: (1, 0)
         int nx=ori_x, ny=ori_y;
         while (true) {
             nx+=1;
             if ((unsigned)nx >= Size || state.mp[nx][ny] != 0) break;
-            // ¼ıÍ··½ÏòÑ­»·Õ¹¿ª
+            // ç®­å¤´æ–¹å‘å¾ªç¯å±•å¼€
             for (short j=0; j<8; ++j) {
                 int ax=nx, ay=ny;
                 while (true) {
@@ -700,7 +704,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò1: (0, 1)
+        // æ–¹å‘1: (0, 1)
         nx=ori_x, ny=ori_y;
         while (true) {
             ny+=1;
@@ -715,7 +719,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò2: (-1, 0)
+        // æ–¹å‘2: (-1, 0)
         nx=ori_x, ny=ori_y;
         while (true) {
             nx-=1;
@@ -730,7 +734,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò3: (0, -1)
+        // æ–¹å‘3: (0, -1)
         nx=ori_x, ny=ori_y;
         while (true) {
             ny-=1;
@@ -745,7 +749,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò4: (1, 1)
+        // æ–¹å‘4: (1, 1)
         nx=ori_x, ny=ori_y;
         while (true) {
             nx+=1, ny+=1;
@@ -760,7 +764,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò5: (1, -1)
+        // æ–¹å‘5: (1, -1)
         nx=ori_x, ny=ori_y;
         while (true) {
             nx+=1, ny-=1;
@@ -775,7 +779,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò6: (-1, 1)
+        // æ–¹å‘6: (-1, 1)
         nx=ori_x, ny=ori_y;
         while (true) {
             nx-=1, ny+=1;
@@ -790,7 +794,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
             }
         }
         
-        // ·½Ïò7: (-1, -1)
+        // æ–¹å‘7: (-1, -1)
         nx=ori_x, ny=ori_y;
         while (true) {
             nx-=1, ny-=1;
@@ -807,7 +811,7 @@ inline void GenerateMove(vector<Move> &cur,const Situation &state,int color)
     }
     // return cur;
 }
-// ÓÅ»¯BFS£ºÊ¹ÓÃ¾²Ì¬Êı×é¶ÓÁĞÌæ´úqueue
+// ä¼˜åŒ–BFSï¼šä½¿ç”¨é™æ€æ•°ç»„é˜Ÿåˆ—æ›¿ä»£queue
 inline Situation CalcQueenMove(int color, const Situation &state)
 {
     Situation res;
@@ -815,7 +819,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
     static int qx[64], qy[64]; 
     int head=0, tail=0;
     
-    // Ê¹ÓÃÕ¹¿ªÑ­»·ÓÅ»¯
+    // ä½¿ç”¨å±•å¼€å¾ªç¯ä¼˜åŒ–
     for (short x = 0; x < Size; ++x) {
         for (short y = 0; y < Size; ++y)
         {
@@ -828,12 +832,12 @@ inline Situation CalcQueenMove(int color, const Situation &state)
         }
     }
     
-    // BFS¼ÆËãQueen×ß·¨¿É´ï¾àÀë - Ñ­»·Õ¹¿ªÓÅ»¯
+    // BFSè®¡ç®—Queenèµ°æ³•å¯è¾¾è·ç¦» - å¾ªç¯å±•å¼€ä¼˜åŒ–
     while (head < tail)
     {
         int x=qx[head], y=qy[head++];
         
-        // ·½Ïò0: (1, 0)
+        // æ–¹å‘0: (1, 0)
         int nx=x, ny=y;
         while (true)
         {
@@ -847,7 +851,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò1: (0, 1)
+        // æ–¹å‘1: (0, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -861,7 +865,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò2: (-1, 0)
+        // æ–¹å‘2: (-1, 0)
         nx=x, ny=y;
         while (true)
         {
@@ -875,7 +879,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò3: (0, -1)
+        // æ–¹å‘3: (0, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -889,7 +893,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò4: (1, 1)
+        // æ–¹å‘4: (1, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -903,7 +907,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò5: (1, -1)
+        // æ–¹å‘5: (1, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -917,7 +921,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò6: (-1, 1)
+        // æ–¹å‘6: (-1, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -931,7 +935,7 @@ inline Situation CalcQueenMove(int color, const Situation &state)
             }
         }
         
-        // ·½Ïò7: (-1, -1)
+        // æ–¹å‘7: (-1, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -955,7 +959,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
     static int qx[64], qy[64];
     int head=0, tail=0;
     
-    // Ê¹ÓÃÕ¹¿ªÑ­»·ÓÅ»¯
+    // ä½¿ç”¨å±•å¼€å¾ªç¯ä¼˜åŒ–
     for (short x = 0; x < Size; ++x) {
         for (short y = 0; y < Size; ++y)
         {
@@ -973,7 +977,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
     {
         int x=qx[head], y=qy[head++];
         
-        // ·½Ïò0: (1, 0)
+        // æ–¹å‘0: (1, 0)
         int nx=x+1, ny=y;
         if ((unsigned)nx < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -982,7 +986,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò1: (0, 1)
+        // æ–¹å‘1: (0, 1)
         nx=x, ny=y+1;
         if ((unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -991,7 +995,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò2: (-1, 0)
+        // æ–¹å‘2: (-1, 0)
         nx=x-1, ny=y;
         if ((unsigned)nx < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1000,7 +1004,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò3: (0, -1)
+        // æ–¹å‘3: (0, -1)
         nx=x, ny=y-1;
         if ((unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1009,7 +1013,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò4: (1, 1)
+        // æ–¹å‘4: (1, 1)
         nx=x+1, ny=y+1;
         if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1018,7 +1022,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò5: (1, -1)
+        // æ–¹å‘5: (1, -1)
         nx=x+1, ny=y-1;
         if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1027,7 +1031,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò6: (-1, 1)
+        // æ–¹å‘6: (-1, 1)
         nx=x-1, ny=y+1;
         if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1036,7 +1040,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
             qy[tail++] = ny;
         }
         
-        // ·½Ïò7: (-1, -1)
+        // æ–¹å‘7: (-1, -1)
         nx=x-1, ny=y-1;
         if ((unsigned)nx < Size && (unsigned)ny < Size && state.mp[nx][ny]==0 && res.mp[nx][ny] > res.mp[x][y] + 1)
         {
@@ -1048,7 +1052,7 @@ inline Situation CalcKingMove(int color, const Situation &state)
     return res;
 }
 
-// ĞÂÔö£ºÔ¤¼ÆËã¿Õ°×¸ñ×ÓÒÆ¶¯ĞÔ - Ñ­»·Õ¹¿ªÓÅ»¯
+// æ–°å¢ï¼šé¢„è®¡ç®—ç©ºç™½æ ¼å­ç§»åŠ¨æ€§ - å¾ªç¯å±•å¼€ä¼˜åŒ–
 inline void CalcBlankMobility(const Situation &state, int (&blankMobility)[8][8]) 
 {
     memset(blankMobility,0, sizeof(blankMobility));
@@ -1057,38 +1061,38 @@ inline void CalcBlankMobility(const Situation &state, int (&blankMobility)[8][8]
         {
             if (state.mp[i][j] == 0) 
             {
-                // Ñ­»·Õ¹¿ªÓÅ»¯
+                // å¾ªç¯å±•å¼€ä¼˜åŒ–
                 int nx, ny;
                 
-                // ·½Ïò0: (1, 0)
+                // æ–¹å‘0: (1, 0)
                 nx = i + 1; ny = j;
                 if (nx < Size && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò1: (0, 1)
+                // æ–¹å‘1: (0, 1)
                 nx = i; ny = j + 1;
                 if (ny < Size && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò2: (-1, 0)
+                // æ–¹å‘2: (-1, 0)
                 nx = i - 1; ny = j;
                 if (nx >= 0 && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò3: (0, -1)
+                // æ–¹å‘3: (0, -1)
                 nx = i; ny = j - 1;
                 if (ny >= 0 && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò4: (1, 1)
+                // æ–¹å‘4: (1, 1)
                 nx = i + 1; ny = j + 1;
                 if (nx < Size && ny < Size && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò5: (1, -1)
+                // æ–¹å‘5: (1, -1)
                 nx = i + 1; ny = j - 1;
                 if (nx < Size && ny >= 0 && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò6: (-1, 1)
+                // æ–¹å‘6: (-1, 1)
                 nx = i - 1; ny = j + 1;
                 if (nx >= 0 && ny < Size && state.mp[nx][ny] == 0) ++blankMobility[i][j];
                 
-                // ·½Ïò7: (-1, -1)
+                // æ–¹å‘7: (-1, -1)
                 nx = i - 1; ny = j - 1;
                 if (nx >= 0 && ny >= 0 && state.mp[nx][ny] == 0) ++blankMobility[i][j];
             }
@@ -1107,13 +1111,13 @@ inline double CalcMobility(int x,int y,const Situation &state)
     // qy[tail++] = y;
     // res[x][y] = 0;
     
-    // Ñ­»·Õ¹¿ªÓÅ»¯
+    // å¾ªç¯å±•å¼€ä¼˜åŒ–
     double retmob = 0;
     // while (head < tail)
     {
         // int x=qx[head], y=qy[head++];
         
-        // ·½Ïò0: (1, 0)
+        // æ–¹å‘0: (1, 0)
         int nx=x, ny=y;
         while (true)
         {
@@ -1122,7 +1126,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
-        // ·½Ïò1: (0, 1)
+        // æ–¹å‘1: (0, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -1131,7 +1135,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (ny-y);
         }
         
-        // ·½Ïò2: (-1, 0)
+        // æ–¹å‘2: (-1, 0)
         nx=x, ny=y;
         while (true)
         {
@@ -1140,7 +1144,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (x-nx);
         }
         
-        // ·½Ïò3: (0, -1)
+        // æ–¹å‘3: (0, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -1149,7 +1153,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (y-ny);
         }
         
-        // ·½Ïò4: (1, 1)
+        // æ–¹å‘4: (1, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -1158,7 +1162,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
-        // ·½Ïò5: (1, -1)
+        // æ–¹å‘5: (1, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -1167,7 +1171,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (nx-x);
         }
         
-        // ·½Ïò6: (-1, 1)
+        // æ–¹å‘6: (-1, 1)
         nx=x, ny=y;
         while (true)
         {
@@ -1176,7 +1180,7 @@ inline double CalcMobility(int x,int y,const Situation &state)
             retmob += (double)(blankMobility[nx][ny]) / (ny-y);
         }
         
-        // ·½Ïò7: (-1, -1)
+        // æ–¹å‘7: (-1, -1)
         nx=x, ny=y;
         while (true)
         {
@@ -1219,12 +1223,12 @@ double f5[32]={0.0000, 0.2300, 0.2300, 0.2159, 0.2067, 0.2000,
 0.0464, 0.0436, 0.0400, 0.0346, 0.0274,
 0.0190, 0.0097, 0.0000, 0.0000, 0.0000,
 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000};
-inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖµ±íÊ¾°×ÓĞÀû
+inline double CalcValue(const Situation &state,const int color)//ä¼°ä»·å‡½æ•°ï¼Œä»¤æ­£å€¼è¡¨ç¤ºç™½æœ‰åˆ©
 {
-    // »ùÓÚ»ØºÏÊı»®·Ö½×¶Î£¬²Î¿¼¹ùÇÙÇÙÂÛÎÄ¡¶ÑÇÂíÑ·Æå»úÆ÷²©ŞÄÏµÍ³ÖĞÆÀ¹Àº¯ÊıµÄÑĞ¾¿¡·£¬²¢ÔÚ8*8ÆåÅÌÊÊµ±¼õÉÙ£¬ÇÒ½øĞĞµ÷²Î
+    // åŸºäºå›åˆæ•°åˆ’åˆ†é˜¶æ®µï¼Œå‚è€ƒéƒ­ç´ç´è®ºæ–‡ã€Šäºšé©¬é€Šæ£‹æœºå™¨åšå¼ˆç³»ç»Ÿä¸­è¯„ä¼°å‡½æ•°çš„ç ”ç©¶ã€‹ï¼Œå¹¶åœ¨8*8æ£‹ç›˜é€‚å½“å‡å°‘ï¼Œä¸”è¿›è¡Œè°ƒå‚
     double a, b, c, d, e;
-    //¾­¹ı¶à´ÎÊµÑé£¬·¢ÏÖ±¾botÔÚÖĞ²Ğ¾ÖĞÔÄÜÏÂ»¬ÑÏÖØ£¬¿¼ÂÇµ÷Õû²ÎÊıÖÁ¸ü×¢ÖØÁé»î¶È
-    //ËãÁË»¹²»Èç°´ÂÛÎÄµÄÀ´
+    //ç»è¿‡å¤šæ¬¡å®éªŒï¼Œå‘ç°æœ¬botåœ¨ä¸­æ®‹å±€æ€§èƒ½ä¸‹æ»‘ä¸¥é‡ï¼Œè€ƒè™‘è°ƒæ•´å‚æ•°è‡³æ›´æ³¨é‡çµæ´»åº¦
+    //ç®—äº†è¿˜ä¸å¦‚æŒ‰è®ºæ–‡çš„æ¥
     // if (turnID <= 7) 
     // {
     //     a = 0.14; b = 0.37; c = 0.13; d = 0.13; e = 0.20;
@@ -1239,29 +1243,29 @@ inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖ
     // }
     a=f1[turnID];b=f2[turnID];c=f3[turnID];d=f4[turnID];e=f5[turnID];
 
-    // ÏÈĞĞ·½ÓÅÊÆ
-    // double k = (BotColor==-1) ? 0.3 : -0.3; // °×·½Îª+
-    // k *= ((color==BotColor)? -1:1);//Èôcolor=Botcolor£¬¼´BotÒÑÂä×Ó£¬ÔòÏÈĞĞ·½Îª¶Ô·½£¬*-1
+    // å…ˆè¡Œæ–¹ä¼˜åŠ¿
+    // double k = (BotColor==-1) ? 0.3 : -0.3; // ç™½æ–¹ä¸º+
+    // k *= ((color==BotColor)? -1:1);//è‹¥color=Botcolorï¼Œå³Botå·²è½å­ï¼Œåˆ™å…ˆè¡Œæ–¹ä¸ºå¯¹æ–¹ï¼Œ*-1
     double k=(color==White) ? -0.2 : 0.2;
     
-    // ¼ÆËãË«·½QueenMove/KingMove¾ØÕó - ¼õÉÙ¿½±´¿ªÏú
+    // è®¡ç®—åŒæ–¹QueenMove/KingMoveçŸ©é˜µ - å‡å°‘æ‹·è´å¼€é”€
     const Situation WhiteQM = CalcQueenMove(-1, state);
     const Situation BlackQM = CalcQueenMove(1, state);
     const Situation WhiteKM = CalcKingMove(-1, state);
     const Situation BlackKM = CalcKingMove(1, state);
     
-    // ¼ÆËãterritoryÌØÕ÷Öµt1(Queen)¡¢t2(King)£¨¿Õ¸ñ¿ØÖÆÈ¨ÆÀ¹À£©
+    // è®¡ç®—territoryç‰¹å¾å€¼t1(Queen)ã€t2(King)ï¼ˆç©ºæ ¼æ§åˆ¶æƒè¯„ä¼°ï¼‰
     double t1 = 0.0, t2 = 0.0;
-    // ¼ÆËãpositionÌØÕ÷Öµp1(Queen)¡¢p2(King)
+    // è®¡ç®—positionç‰¹å¾å€¼p1(Queen)ã€p2(King)
     double p1 = 0.0, p2 = 0.0;
     
-    // ºÏ²¢Ñ­»·ÒÔ¼õÉÙÑ­»·¿ªÏú
+    // åˆå¹¶å¾ªç¯ä»¥å‡å°‘å¾ªç¯å¼€é”€
     for (short x = 0; x < Size; ++x) {
         for (short y = 0; y < Size; ++y) 
         {
             if (state.mp[x][y] != 0) continue;
             
-            // t1£ºQueen×ß·¨¿ØÖÆÈ¨
+            // t1ï¼šQueenèµ°æ³•æ§åˆ¶æƒ
             const int wqm = WhiteQM.mp[x][y], bqm = BlackQM.mp[x][y];
             const bool wqm_valid = (wqm != 0x3f3f3f3f);
             const bool bqm_valid = (bqm != 0x3f3f3f3f);
@@ -1274,7 +1278,7 @@ inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖ
                 t1 -= 1.0;
             }
             
-            // t2£ºKing×ß·¨¿ØÖÆÈ¨
+            // t2ï¼šKingèµ°æ³•æ§åˆ¶æƒ
             const int wkm = WhiteKM.mp[x][y], bkm = BlackKM.mp[x][y];
             const bool wkm_valid = (wkm != 0x3f3f3f3f);
             const bool bkm_valid = (bkm != 0x3f3f3f3f);
@@ -1286,7 +1290,7 @@ inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖ
             else if (wkm_valid) t2 += 1.0;
             else if (bkm_valid) t2 -= 1.0;
             
-            // p1£ºQueen×ß·¨Î»ÖÃ²î
+            // p1ï¼šQueenèµ°æ³•ä½ç½®å·®
             if (wqm_valid && bqm_valid) {
                 
                 const double wqm_pow = 1.0 / (1 << wqm);  // 2^(-wqm)
@@ -1296,17 +1300,17 @@ inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖ
             else if (wqm_valid && (!bqm_valid)) p1+=2.0/ (1 << wqm);
             else if ((!wqm_valid) && bqm_valid) p1-=2.0/ (1 << bqm);
 
-            // p2£ºKing×ß·¨Î»ÖÃ²î
+            // p2ï¼šKingèµ°æ³•ä½ç½®å·®
             if (wkm_valid && bkm_valid) {
                 const double diff = static_cast<double>(bkm - wkm) / 6.0;
-                // Ê¹ÓÃÌõ¼ş±í´ïÊ½´úÌæmin/maxº¯Êıµ÷ÓÃ
+                // ä½¿ç”¨æ¡ä»¶è¡¨è¾¾å¼ä»£æ›¿min/maxå‡½æ•°è°ƒç”¨
                 const double clamped_diff = (diff > 1.0) ? 1.0 : ((diff < -1.0) ? -1.0 : diff);
                 p2 += clamped_diff;
             }
         }
     }
 
-    // ¼ÆËãmobilityÌØÕ÷Öµm
+    // è®¡ç®—mobilityç‰¹å¾å€¼m
     double m=0;
     
     double WhiteMobility = 0, BlackMobility = 0;
@@ -1318,26 +1322,29 @@ inline double CalcValue(const Situation &state,const int color)//¹À¼Ûº¯Êı£¬ÁîÕıÖ
             if (state.mp[x][y] == -1) 
             { 
                 const double tmp = CalcMobility(x, y, state);
-                WhiteMobility  -= 100.0/(tmp+10);//ÎªÊ²Ã´£¿ÕâÒ»ÎÊÌâÖµµÃË¼¿¼
-                //´ÓBot id=5e1aba34b63f9560371d0204 ÖĞÎÒ·¢ÏÖÁËÕâÒ»Ææ¹ÖµÄĞ´·¨¡£ÎÒÈÏÎª£¬ÕâÊÇÎªÁË±ÜÃâ¹ı¶àµÄ×ß·¨²¢²»ÄÜ×ª»¯³ÉÊµ¼ÊÓÅÊÆ¡£
-                // Ê¹ÓÃÎ»ÔËËãÓÅ»¯minº¯Êı
+                //WhiteMobility  -= 100.0/(tmp+10);//ä¸ºä»€ä¹ˆï¼Ÿè¿™ä¸€é—®é¢˜å€¼å¾—æ€è€ƒ
+                //ä»Bot id=5e1aba34b63f9560371d0204 ä¸­æˆ‘å‘ç°äº†è¿™ä¸€å¥‡æ€ªçš„å†™æ³•ã€‚æˆ‘è®¤ä¸ºï¼Œè¿™æ˜¯ä¸ºäº†é¿å…è¿‡å¤šçš„èµ°æ³•å¹¶ä¸èƒ½è½¬åŒ–æˆå®é™…ä¼˜åŠ¿ã€‚
+
+                WhiteMobility +=tmp;
+                // ä½¿ç”¨ä½è¿ç®—ä¼˜åŒ–minå‡½æ•°
                 // WhiteMinMobility = (tmp < WhiteMinMobility) ? tmp : WhiteMinMobility;
             }
             else if (state.mp[x][y] == 1) 
             { 
                 const double tmp = CalcMobility(x, y, state);
-                BlackMobility -= 100.0/(tmp+10);
+                //BlackMobility -= 100.0/(tmp+10);
+                BlackMobility += tmp;
                 // BlackMinMobility = (tmp < BlackMinMobility) ? tmp : BlackMinMobility;
             }
         }
     }
     
-    // Ê¹ÓÃÎ»ÔËËãÓÅ»¯¼õ·¨
+    // ä½¿ç”¨ä½è¿ç®—ä¼˜åŒ–å‡æ³•
     const double mobility_diff = WhiteMobility - BlackMobility;
     // const int min_mobility_diff = WhiteMinMobility - BlackMinMobility;
     m = static_cast<double>(mobility_diff) ;//- 0.5 * static_cast<double>(min_mobility_diff);
     
-    // ·Ö½×¶Î¼ÓÈ¨¼ÆËã×Ü¹ÀÖµ
+    // åˆ†é˜¶æ®µåŠ æƒè®¡ç®—æ€»ä¼°å€¼
     const double total = a * t1 + b * t2 + c * p1 + d * p2 + e * m;
     // if (abs(total+2.97)<0.1)
     // {
